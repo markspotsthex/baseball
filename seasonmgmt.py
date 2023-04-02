@@ -33,4 +33,5 @@ r.add_from_Waivers(s23,{'drop':[('Pepiot','Ryan')]
                         ,'date':'2023-03-31'})
 
 r.roster_save_j(s23)
+r.roster_save_p(s23)
 #print(s23)
