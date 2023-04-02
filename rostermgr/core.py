@@ -130,9 +130,11 @@ def take_off_il(x,pl):
     })
 
 #UDF for IL swap (player off and player on)
-def swap_on_IL(x,pl):
-    take_off_il(x,pl)
-    put_on_il(x,pl)
+def manage_il(x,pl):
+    if 'from' in pl:
+        take_off_il(x,pl)
+    if 'to' in pl:
+        put_on_il(x,pl)
     return update_roster(x)
 
 ##########################################################################
