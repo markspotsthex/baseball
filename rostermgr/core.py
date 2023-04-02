@@ -12,20 +12,22 @@ import json
 This section is to establish blank roster dictionary
 """
 ##########################################################################
-roster_dict = {
- 'move_ct':0
-,'active':{
-  'count':0
- ,'player_names':[]
- }
-,'injured_moves':0
-,'injuredlist':{
-  'count':0
- ,'player_names':[]
- }
-,'transaction_ct':0
-,'transactions':[]
-}
+def get_roster():
+    roster_dict = {
+    'move_ct':0
+    ,'active':{
+    'count':0
+    ,'player_names':[]
+    }
+    ,'injured_moves':0
+    ,'injuredlist':{
+    'count':0
+    ,'player_names':[]
+    }
+    ,'transaction_ct':0
+    ,'transactions':[]
+    }
+    return roster_dict
 
 ##########################################################################
 """
@@ -64,9 +66,9 @@ def update_roster(x):
     x['injuredlist']['count']=len(x['injuredlist']['player_names'])
     x['move_ct'] = len(x['transactions'])
 
-#UDF for generic transaction type
-def add_from_type(x,pl,tt):
-    t_ct = x['transaction_ct']+1
+#UDF for player drop to waivers
+def drop(x,pl):
+    t_ct = 0
     x['transactions'].append({
          'to':'available'
         ,'from':'active'
@@ -76,6 +78,12 @@ def add_from_type(x,pl,tt):
         ,'tdate':pl['date']
         ,'t_id':t_ct
     })
+
+#UDF for generic transaction type
+def add_from_type(x,pl,tt):
+    if 'drop' in pl:
+        drop(x,pl)
+    t_ct = x['transaction_ct']+1
     x['transactions'].append({
          'to':'active'
         ,'from':'available'
@@ -84,7 +92,6 @@ def add_from_type(x,pl,tt):
         ,'ttype':tt
         ,'tdate':pl['date']
         ,'t_id':t_ct
-
     })
     return update_roster(x)
 
@@ -96,8 +103,21 @@ def add_from_FA(x,pl):
 def add_from_Waivers(x,pl):
     return add_from_type(x,pl,'Waivers')
 
-#UDF for IL swap (player off and player on)
-def swap_on_IL(x,pl):
+#UDF for initial IL move
+def put_on_il(x,pl):
+    m_ct = x['injured_moves']+1
+    x['transactions'].append({
+     'to':'injuredlist'
+    ,'from':'active'
+    ,'player_names':pl['to']
+    ,'tdesc':'Injured List'
+    ,'ttype':'To IL'
+    ,'tdate':pl['date']
+    ,'i_id':m_ct
+    })
+
+#UDF for initial IL move
+def take_off_il(x,pl):
     m_ct = x['injured_moves']+1
     x['transactions'].append({
      'to':'active'
@@ -108,15 +128,12 @@ def swap_on_IL(x,pl):
     ,'tdate':pl['date']
     ,'i_id':m_ct
     })
-    x['transactions'].append({
-     'to':'injuredlist'
-    ,'from':'active'
-    ,'player_names':pl['to']
-    ,'tdesc':'Injured List'
-    ,'ttype':'To IL'
-    ,'tdate':pl['date']
-    ,'i_id':m_ct
-    })
+
+#UDF for IL swap (player off and player on)
+def swap_on_IL(x,pl):
+    take_off_il(x,pl)
+    put_on_il(x,pl)
+    return update_roster(x)
 
 ##########################################################################
 """
